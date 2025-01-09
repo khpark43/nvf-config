@@ -20,6 +20,7 @@
       };
     in
     {
+      formatter.${system} = pkgs.nixfmt-rfc-style;
       packages.${system}.default = customNeovim.neovim;
     };
 }
