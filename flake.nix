@@ -1,26 +1,30 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
     nvf.url = "github:notashelf/nvf";
   };
 
   outputs =
     {
       nixpkgs,
+      flake-utils,
       nvf,
       ...
     }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      configModule = import ./configuration.nix false;
-      customNeovim = nvf.lib.neovimConfiguration {
-        inherit pkgs;
-        modules = [ configModule ];
-      };
-    in
-    {
-      formatter.${system} = pkgs.nixfmt-rfc-style;
-      packages.${system}.default = customNeovim.neovim;
-    };
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        configModule = import ./configuration.nix false;
+        customNeovim = nvf.lib.neovimConfiguration {
+          inherit pkgs;
+          modules = [ configModule ];
+        };
+      in
+      {
+        formatter = pkgs.nixfmt-rfc-style;
+        packages.default = customNeovim.neovim;
+      }
+    );
 }
